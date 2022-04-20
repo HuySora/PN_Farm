@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76177332ed38bef4ba21b52d1c844aa4, type: 3}
+  m_Name: SI_HenPens
+  m_EditorClassIdentifier: 
+  <Name>k__BackingField: Hen
+  <Description>k__BackingField: Required to raise chicken
+  <Icon>k__BackingField: {fileID: 21300000, guid: 621c7da935fb6044dab208e0513e3371, type: 3}
+  <ShopCategoryAsset>k__BackingField: {fileID: 11400000, guid: 7f47bb18a17218844a8fc60a568eef30, type: 2}
+  <Price>k__BackingField: 50
+  <CurrencyAsset>k__BackingField: {fileID: 11400000, guid: b45552b975fc08c45a0b0ff1b19c4295, type: 2}
+  <Level>k__BackingField: 2
+  <Prefab>k__BackingField: {fileID: 0}
