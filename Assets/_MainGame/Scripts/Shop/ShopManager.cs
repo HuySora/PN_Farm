@@ -30,7 +30,7 @@ namespace FarmGame.Shop
 
                 if (m_CategoryAssets[i].Sprite == null)
                 {
-                    Debug.LogWarning($"{m_CategoryAssets[i].name} has null(s)! (click to trace)", m_CategoryAssets[i]);
+                    this.LogNull($"{m_CategoryAssets[i].name} has null(s)! (click to trace)", m_CategoryAssets[i]);
                 }
             }
 
@@ -49,7 +49,7 @@ namespace FarmGame.Shop
                 bool currencyAssetIsNull = m_ItemAssets[i].CurrencyAsset == null;
                 if (iconIsNull || categoryAssetIsNull || currencyAssetIsNull)
                 {
-                    Debug.LogWarning($"{m_ItemAssets[i].name} has null(s)! (click to trace)", m_ItemAssets[i]);
+                    this.LogNull($"{m_ItemAssets[i].name} has null(s)! (click to trace)", m_ItemAssets[i]);
                 }
             }
         }
@@ -83,7 +83,7 @@ namespace FarmGame.Shop
             foreach (var category in m_CategoryAssets)
             {
                 // NULLCHECK: Game designer error
-                if (category.TryNullCheckAndLog("Detect null value in list of ShopCategoryAsset.", this)) continue;
+                if (category.TryNullCheckAndLog("Detect null value in list of ShopCategoryAsset.", this, this)) continue;
 
                 var panel = Instantiate(m_CategoryPanelPrefab, m_CategoryPanelTransform);
                 panel.Title.text = category.Name;
@@ -102,8 +102,8 @@ namespace FarmGame.Shop
             foreach (var item in m_ItemAssets)
             {
                 // NULLCHECK: Game designer error
-                if (item.TryNullCheckAndLog("Detect null value in list of ShopItemAsset.", this)) continue;
-                if (item.ShopCategoryAsset.TryNullCheckAndLog("ShopCategoryAsset is null.", item)) continue;
+                if (item.TryNullCheckAndLog("Detect null value in list of ShopItemAsset.", this, this)) continue;
+                if (item.ShopCategoryAsset.TryNullCheckAndLog("ShopCategoryAsset is null.", item, this)) continue;
                 
                 Instantiate(m_ItemHolderPrefab, m_CategoryContentTransforms[item.ShopCategoryAsset]).Inject(item);
             }

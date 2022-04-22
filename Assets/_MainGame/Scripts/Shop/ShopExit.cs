@@ -7,7 +7,7 @@ namespace FarmGame.Shop
     using UnityEngine.EventSystems;
 
     public class ShopExit : MonoBehaviour, IPointerClickHandler, IPointerEnterHandler {
-        public void OnPointerClick(PointerEventData eventData)  => ViewManager.SwitchToMain();
+        public void OnPointerClick(PointerEventData eventData)  => ViewManager.SwitchTo<MainView>();
         public void OnPointerEnter(PointerEventData eventData)
         {
             if (!eventData.dragging) return;
@@ -15,7 +15,7 @@ namespace FarmGame.Shop
             if (draggable.ItemHolder.ItemAsset.Prefab == null) return;
 
             var pos = CameraManager.Main.ScreenToWorldPoint(eventData.position);
-            BuildManager.EnterBuyingMode(draggable.ItemHolder.ItemAsset.Prefab, pos);
+            BuildManager.EnterConstructingMode(draggable.ItemHolder.ItemAsset.Prefab, pos);
         }
     }
 }

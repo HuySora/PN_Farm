@@ -17,9 +17,9 @@ namespace FarmGame.Shop
         public void Inject(ShopItemAsset asset)
         {
             // NULLCHECK: Game designer error
-            if (asset.TryNullCheckAndLog("Trying to injecting null.", this)) return;
-            if (asset.CurrencyAsset.TryNullCheckAndLog("CurrencyAsset is null.", asset)) return;
-            if (asset.CurrencyAsset.Sprite.TryNullCheckAndLog("Sprite is null", asset.CurrencyAsset)) return;
+            if (asset.TryNullCheckAndLog("Trying to injecting null.", this, this)) return;
+            if (asset.CurrencyAsset.TryNullCheckAndLog("CurrencyAsset is null.", asset, this)) return;
+            if (asset.CurrencyAsset.Sprite.TryNullCheckAndLog("Sprite is null", asset.CurrencyAsset, this)) return;
 
             ItemAsset = asset;
             Name.text = asset.Name;
@@ -31,8 +31,6 @@ namespace FarmGame.Shop
 
             ItemDrag.Inject(this);
         }
-
-
 
     }
 }

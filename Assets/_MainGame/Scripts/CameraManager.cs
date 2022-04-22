@@ -25,6 +25,9 @@ namespace FarmGame
 
     public partial class CameraManager : SingletonBehaviour<CameraManager>
     {
+        public const float kZoomMultiplier = 0.01f;
+        public const float kZoomStepMultiplier = 1f;
+
         #region Static ----------------------------------------------------------------------------------------------------
         public static Camera Main => Current.m_Camera;
         #endregion
@@ -35,39 +38,103 @@ namespace FarmGame
         [SerializeField] private float m_MaxX;
         [SerializeField] private float m_MinY;
         [SerializeField] private float m_MaxY;
-        [SerializeField] private float m_ZoomMin;
-        [SerializeField] private float m_ZoomMax;
+
+        [SerializeField, Range(0.01f, 10f)] private float m_ZoomMin = 0.01f;
+        [SerializeField, Range(10f, 100f)] private float m_ZoomMax = 10f;
+        [SerializeField, Range(1f, 10f)] private float m_ZoomSpeed = 1f;
 
 
-        private Vector3 m_DragAnchor;
-        private bool m_CanDrag;
+        private Vector3 m_AnchorPos;
+        private bool m_IsAnchored;
+
+        private bool m_IsZooming;
+        private float m_PrevMagnitude;
+        private bool m_WasZoomingLastFrame;
 
         private void LateUpdate()
         {
-            // Dragging start (similar to Input.touches[0].phase == TouchPhase.Began)
-            if (Input.GetMouseButtonDown(0))
+            HandleZoom();
+            HandleDrag();
+        }
+
+        private void HandleZoom()
+        {
+            // Touch
+            if (Input.touchCount == 2)
             {
-                // Only draggable if not clicking on UI
-                m_CanDrag = !EventSystem.current.IsPointerOverGameObject();
-                if (m_CanDrag)
+                var touchZero = Input.GetTouch(0);
+                var touchOne = Input.GetTouch(1);
+
+                // Start
+                if (!m_IsZooming)
                 {
-                    m_DragAnchor = m_Camera.ScreenToWorldPoint(Input.mousePosition);
+                    // We only care that the first touch not clicking on UI
+                    if (EventSystem.current.IsPointerOverGameObject(touchZero.fingerId)) return;
+
+                    m_PrevMagnitude = (touchOne.position - touchZero.position).magnitude;
+                    m_IsZooming = true;
+
+                    return;
                 }
+
+                // Update
+                if (m_IsZooming)
+                {
+                    float magnitude = (touchOne.position - touchZero.position).magnitude;
+                    float deltaMagnitude = magnitude - m_PrevMagnitude;
+                    m_PrevMagnitude = magnitude;
+
+                    m_Camera.orthographicSize = Mathf.Clamp(m_Camera.orthographicSize - deltaMagnitude * m_ZoomSpeed * kZoomMultiplier, m_ZoomMin, m_ZoomMax);
+                    m_WasZoomingLastFrame = true;
+
+                    return;
+                }
+
+                m_IsAnchored = false;
+                return;
             }
-            // Dragging (similar to Input.touches[0].phase == TouchPhase.Moved || TouchPhase.Stationary)
-            else if (Input.GetMouseButton(0) && m_CanDrag)
+            if (Input.touchCount == 1)
+            {
+                m_WasZoomingLastFrame = false;
+            }
+
+            // Mouse
+            Debug.Log(Input.mouseScrollDelta.y);
+
+            if (Input.mouseScrollDelta.y != 0) {
+                float size = m_Camera.orthographicSize - Input.mouseScrollDelta.y * m_ZoomSpeed * kZoomStepMultiplier;
+                m_Camera.orthographicSize = Mathf.Clamp(size, m_ZoomMin, m_ZoomMax);
+            }
+        }
+        private void HandleDrag()
+        {
+            // Anchor start
+            if (PrimaryPointer.WasPressedThisFrame())
+            {
+                // Only anchorable if not clicking on UI
+                m_IsAnchored = !PrimaryPointer.IsOverGameObject();
+                if (m_IsAnchored && PrimaryPointer.TryGetPosition(out var pointerPos))
+                {
+                    m_AnchorPos = m_Camera.ScreenToWorldPoint(pointerPos);
+                }
+
+                return;
+            }
+            // Dragging (1 pointer)
+            else if (PrimaryPointer.IsPressed() && m_IsAnchored && PrimaryPointer.TryGetPosition(out var pointerPos))
             {
                 // Adjust the position so we don't have any offset
-                var offset = m_Camera.ScreenToWorldPoint(Input.mousePosition) - m_DragAnchor;
-                float clampedX = Mathf.Clamp(m_Camera.transform.position.x - offset.x, m_MinX, m_MaxX);
-                float clampedY = Mathf.Clamp(m_Camera.transform.position.y - offset.y, m_MinY, m_MaxY);
+                var offset = m_Camera.ScreenToWorldPoint(pointerPos) - m_AnchorPos;
+
+                float confinedMinX = m_MinX + m_Camera.orthographicSize * m_Camera.aspect;
+                float confinedMaxX = m_MaxX - m_Camera.orthographicSize * m_Camera.aspect;
+                float confinedMinY = m_MinY + m_Camera.orthographicSize;
+                float confinexMaxY = m_MaxY - m_Camera.orthographicSize;
+
+                float clampedX = Mathf.Clamp(m_Camera.transform.position.x - offset.x, confinedMinX, confinedMaxX);
+                float clampedY = Mathf.Clamp(m_Camera.transform.position.y - offset.y, confinedMinY, confinexMaxY);
+
                 m_Camera.transform.position = new Vector3(clampedX, clampedY, m_Camera.transform.position.z);
-            }
-            // Zooming
-            else if (Input.touchCount == 2)
-            {
-                //var touchZero = Input.GetTouch(0);
-                //var touchOne = Input.GetTouch(1); 
             }
         }
     }

@@ -1,44 +1,63 @@
 namespace FarmGame.UI
 {
+    using System;
+    using System.Collections.Generic;
     using UnityEngine;
 
     public partial class ViewManager : SingletonBehaviour<ViewManager> {
         #region Static ----------------------------------------------------------------------------------------------------
         public static Canvas Canvas => Current.m_Canvas;
-        public static void SwitchToMain() => Current.InnerSwitchToMain();
-        public static void SwitchToShop() => Current.InnerSwitchToShop();
-        public static void SwitchToBuild() => Current.InnerSwitchToBuild();
+        public static void SwitchTo<T>() where T : ViewBehaviour => Current.InnerSwitchTo<T>();
+        public static void SwitchTo(ViewBehaviour view) => Current.InnerSwitchTo(view);
         #endregion
 
         [SerializeField] private Canvas m_Canvas;
-        [SerializeField] private ViewBehaviour m_MainView;
-        [SerializeField] private ViewBehaviour m_ShopView;
-        [SerializeField] private ViewBehaviour m_BuildView;
+        [SerializeField] private ViewBehaviour m_InitialView;
 
-        private void Start()
+        // OPTIMIZABLE: Not sure if this cost performance
+        private Dictionary<Type, ViewBehaviour> m_TypeToInstance;
+
+        private void Awake()
         {
-            m_MainView.Open();
+            m_TypeToInstance = new Dictionary<Type, ViewBehaviour>();
+            foreach (var view in FindObjectsOfType<ViewBehaviour>())
+            {
+                m_TypeToInstance[view.GetType()] = view;
+            }
         }
 
-        private void InnerSwitchToMain()
+        private void Start() => m_InitialView.Open();
+
+        private void InnerSwitchTo<T>()
+        where T : ViewBehaviour
         {
-            m_ShopView.Close();
-            m_BuildView.Close();
-            m_MainView.Open();
+            if (!m_TypeToInstance.TryGetValue(typeof(T), out var instance))
+            {
+                DebugEx.LogNull($"No instance of type {typeof(T)} in the dictionary.", this);
+                return;
+            }
+
+            Toggle(instance);
         }
-        
-        private void InnerSwitchToShop()
+        private void InnerSwitchTo(ViewBehaviour view)
         {
-            m_MainView.Close();
-            m_BuildView.Close();
-            m_ShopView.Open();
+            if (!m_TypeToInstance.ContainsValue(view))
+            {
+                DebugEx.LogNull($"No instance of type {view.GetType()} in the dictionary.", this);
+                return;
+            }
+
+            Toggle(view);
         }
 
-        private void InnerSwitchToBuild()
+        private void Toggle(ViewBehaviour targetView)
         {
-            m_MainView.Close();
-            m_ShopView.Close();
-            m_BuildView.Open();
+            foreach (var view in m_TypeToInstance.Values)
+            {
+                if (view != targetView) view.Close();
+            }
+
+            targetView.Open();
         }
     }
 }

@@ -18,8 +18,8 @@ namespace FarmGame.Shop
         public void Inject(ShopItemHolder holder)
         {
             // NULLCHECK: Game designer error
-            if (holder.TryNullCheckAndLog("Trying to injecting null.", this)) return;
-            if (holder.ItemAsset.Icon.TryNullCheckAndLog("Icon is null.", holder.ItemAsset)) return;
+            if (holder.TryNullCheckAndLog("Trying to injecting null.", this, this)) return;
+            if (holder.ItemAsset.Icon.TryNullCheckAndLog("Icon is null.", holder.ItemAsset, this)) return;
 
             ItemHolder = holder;
             Image.sprite = holder.ItemAsset.Icon;
